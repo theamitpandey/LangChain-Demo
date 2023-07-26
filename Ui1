@@ -1,0 +1,34 @@
+import panel as pn
+from openai import ChatGPT, ConversationBufferMemory, ConversationChain
+
+# Function to get the bot response
+def get_bot_response(user_input):
+    response = conversation.predict(input=user_input)
+    return response['output']
+
+# Function to update the conversation
+def update_conversation(event):
+    user_input = event.new
+    bot_response = get_bot_response(user_input)
+    conversation.append(user_input, bot_response)
+    chat_input.value = ""
+    chat_output.text += f"\n\nYou: {user_input}\nChatbot: {bot_response}"
+
+# Initialize the Chatbot
+llm = ChatGPT(temperature=0.0)
+memory = ConversationBufferMemory()
+conversation = ConversationChain(llm=llm, memory=memory, verbose=True)
+
+# Create the chat UI
+chat_input = pn.widgets.TextInput(placeholder='Type your message here...')
+chat_output = pn.widgets.StaticText(value="Chatbot: Hello! How can I assist you today?", height=400)
+
+chat_input.param.watch(update_conversation, 'value')
+
+chat_app = pn.Column(
+    pn.Row(pn.Spacer(), chat_output, pn.Spacer()),
+    pn.Row(pn.Spacer(), chat_input, pn.Spacer()),
+)
+
+# Run the app
+chat_app.show()
